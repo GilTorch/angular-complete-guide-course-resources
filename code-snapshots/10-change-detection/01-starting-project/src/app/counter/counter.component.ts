@@ -18,11 +18,11 @@ export class CounterComponent implements OnInit {
       this.count.set(0);
     },4000);
 
-    this.zone.runOutsideAngular(() => {
+    // this.zone.runOutsideAngular(() => {
       setTimeout(() => {
         console.log('Timer expired');
       }, 5000)
-    })
+    // })
 
   }
 
