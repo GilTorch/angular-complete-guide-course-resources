@@ -1,49 +1,33 @@
-import { afterNextRender, Component, DestroyRef, inject, viewChild } from '@angular/core';
-import { FormsModule, NgForm } from '@angular/forms';
-import { debounceTime } from 'rxjs';
+import { Component } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
-  imports: [FormsModule]
+  imports: [ReactiveFormsModule]
 })
 export class LoginComponent {
 
-  private form = viewChild.required<NgForm>('form');
-  private destroyRef = inject(DestroyRef);
-
-  constructor(){
-    afterNextRender(() => {
-
-      const savedForm = window.localStorage.getItem('saved-login-form');
-
-      if(savedForm){
-        const loadedFormData = JSON.parse(savedForm);
-        const savedEmail = loadedFormData.email;
-        setTimeout(() => {
-          this.form().controls['email'].setValue(savedEmail);
-        },1)
-      }
-
-     const subscription = this.form().valueChanges?.pipe(debounceTime(500)).subscribe({
-        next: (value) => window.localStorage.setItem('saved-login-form', JSON.stringify({ email: value.email })) 
-      });
-      this.destroyRef.onDestroy(() => subscription?.unsubscribe());
+  form = new FormGroup({
+    email: new FormControl('', {
+      validators: [Validators.email, Validators.required]
+    }),
+    password: new FormControl('', {
+      validators: [Validators.required, Validators.minLength(6)]
     })
+  })
 
+
+  isInvalid(field: "email" | "password"){
+    return this.form.controls[field].touched && this.form.controls[field].dirty && this.form.controls[field].invalid
   }
- 
-  onSubmit(formData: NgForm){
-    if(!formData.form.valid){
-      return;
-    }
-    console.log(formData);
-    const enteredEmail = formData.form.value.email;
-    const enteredPassword = formData.form.value.password;
+
+  onSubmit(){
+    const enteredEmail = this.form.controls.email;
+    const enteredPassword = this.form.controls.password;
     console.log(enteredEmail, enteredPassword);
-
-    formData.form.reset();
   }
+
 }
